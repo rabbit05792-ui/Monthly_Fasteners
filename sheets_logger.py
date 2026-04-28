@@ -102,3 +102,58 @@ def log_to_sheets(markdown_content):
             
     except Exception as e:
         print(f"❌ 寫入 Google 試算表時發生錯誤: {e}")
+
+def log_daily_text_to_sheets(markdown_content, prefix="每日工業預警"):
+    """將每日文字報告以新增一列的方式寫入 Google 試算表"""
+    creds_json_str = os.getenv("GCP_SERVICE_ACCOUNT_JSON")
+    folder_id = os.getenv("GDRIVE_FOLDER_ID")
+    
+    if not creds_json_str:
+        print("未設定 GCP_SERVICE_ACCOUNT_JSON，跳過 Google 試算表寫入。")
+        return
+        
+    try:
+        creds_dict = json.loads(creds_json_str)
+        credentials = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
+        client = gspread.authorize(credentials)
+        
+        today = datetime.today()
+        target_year = today.year
+        target_month = today.month
+        date_str = today.strftime('%Y-%m-%d %H:%M')
+        
+        spreadsheet_name = f"{target_year}{prefix}"
+        worksheet_name = f"{target_month}月"
+        
+        print(f"準備寫入每日預警試算表: {spreadsheet_name} -> {worksheet_name}")
+        
+        spreadsheet = None
+        try:
+            spreadsheet = client.open(spreadsheet_name)
+        except gspread.exceptions.SpreadsheetNotFound:
+            print(f"找不到試算表 '{spreadsheet_name}'，準備自動建立...")
+            if folder_id:
+                spreadsheet = client.create(spreadsheet_name, folder_id=folder_id)
+            else:
+                spreadsheet = client.create(spreadsheet_name)
+            
+            owner_email = os.getenv("SPREADSHEET_OWNER_EMAIL")
+            if owner_email:
+                spreadsheet.share(owner_email, perm_type='user', role='writer')
+        
+        worksheet = None
+        try:
+            worksheet = spreadsheet.worksheet(worksheet_name)
+        except gspread.exceptions.WorksheetNotFound:
+            print(f"建立新分頁 '{worksheet_name}'...")
+            worksheet = spreadsheet.add_worksheet(title=worksheet_name, rows="100", cols="3")
+            # 寫入標題列
+            worksheet.append_row(["日期", "每日情報內容"])
+            worksheet.format('A1:B1', {'textFormat': {'bold': True}, 'backgroundColor': {'red': 0.9, 'green': 0.9, 'blue': 0.9}})
+            
+        # 每天新增一列
+        worksheet.append_row([date_str, markdown_content])
+        print("✅ 成功將今日情報寫入 Google 試算表！")
+            
+    except Exception as e:
+        print(f"❌ 寫入每日 Google 試算表時發生錯誤: {e}")

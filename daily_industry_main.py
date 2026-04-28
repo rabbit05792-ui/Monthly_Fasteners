@@ -3,6 +3,7 @@ from datetime import datetime
 from daily_industry_scraper import search_industry_news
 from daily_industry_llm import generate_daily_report
 from mailer import send_email
+from sheets_logger import log_daily_text_to_sheets
 from dotenv import load_dotenv
 
 def main():
@@ -35,6 +36,10 @@ def main():
     title = "⚠️ 每日工業新聞彙整與變革預警系統"
     
     send_email(markdown_report, subject=subject, title=title)
+    
+    # 4. 寫入 Google 試算表備份
+    print("\n[4/4] 準備寫入每日 Google 試算表...")
+    log_daily_text_to_sheets(markdown_report, prefix="每日工業預警")
     
     print("====== 系統執行完畢 ======")
 
