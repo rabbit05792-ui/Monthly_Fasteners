@@ -1,12 +1,24 @@
 import requests
 import xml.etree.ElementTree as ET
-from datetime import datetime
+from datetime import datetime, timedelta
 
 def get_recent_news(company_name):
-    """使用 Google News RSS 搜尋企業近期新聞"""
+    """使用 Google News RSS 搜尋企業近期新聞 (限定上個月)"""
     try:
-        # 使用 Google News RSS 搜尋，加入製造業關鍵字
-        query = f'"{company_name}" (fasteners OR manufacturing)'
+        # 計算上個月的起訖日期
+        today = datetime.today()
+        first_day_current = today.replace(day=1)
+        last_day_prev = first_day_current - timedelta(days=1)
+        first_day_prev = last_day_prev.replace(day=1)
+        
+        target_year = first_day_prev.year
+        target_month = first_day_prev.month
+        
+        after_str = first_day_prev.strftime("%Y-%m-%d")
+        before_str = first_day_current.strftime("%Y-%m-%d")
+        
+        # 使用 Google News RSS 搜尋，加入製造業關鍵字以及日期限制
+        query = f'"{company_name}" (fasteners OR manufacturing) after:{after_str} before:{before_str}'
         url = f"https://news.google.com/rss/search?q={query}&hl=en-US&gl=US&ceid=US:en"
         
         headers = {
@@ -20,19 +32,25 @@ def get_recent_news(company_name):
         items = root.findall('.//item')
         
         results = []
-        # 只取前 3 則新聞
-        for item in items[:3]:
+        for item in items:
+            # 如果已經取滿 3 則，就停止
+            if len(results) >= 3:
+                break
+                
             title = item.find('title').text if item.find('title') is not None else ''
             pub_date = item.find('pubDate').text if item.find('pubDate') is not None else '近期'
             source = item.find('source').text if item.find('source') is not None else 'Google News'
             
-            # 將 pub_date 簡化
+            # 解析時間並嚴格過濾「非上個月」的新聞
             try:
                 # Format: Tue, 15 Mar 2026 12:00:00 GMT
                 dt = datetime.strptime(pub_date, "%a, %d %b %Y %H:%M:%S %Z")
+                if dt.year != target_year or dt.month != target_month:
+                    continue  # 不屬於上個月，跳過
                 pub_date = dt.strftime("%Y-%m-%d")
             except:
-                pass
+                # 若無法解析時間，為了確保時間準確性，選擇跳過
+                continue
                 
             results.append(f"- [{pub_date}] {title} (來源: {source})")
             
