@@ -48,7 +48,7 @@ def generate_daily_report(raw_news_data):
 請依照上述要求，將這些原始資料轉化為高價值且具備防偽機制的動態簡報！
     """
     
-    print("🧠 正在請求 Gemini 進行情報分析官優化...")
+    print("正在請求 Gemini 進行情報分析官優化...")
     response = client.models.generate_content(
         model='gemini-2.5-flash',
         contents=prompt,

@@ -1,9 +1,10 @@
-from duckduckgo_search import DDGS
+import requests
+import xml.etree.ElementTree as ET
 import time
 
 CATEGORIES = {
     "汽車工業": {
-        "sites": ["autonews.com", "reuters.com/business/autos-transportation", "electrek.co"],
+        "sites": ["autonews.com", "reuters.com", "electrek.co"],
         "keywords": '("L3" OR "L4" OR "autonomous driving" OR "solid-state battery" OR "new plant" OR "factory")'
     },
     "重型機具": {
@@ -24,36 +25,48 @@ CATEGORIES = {
     }
 }
 
-def search_industry_news(timelimit='w'):
+def search_industry_news(timelimit='7d'):
     """
-    使用 DuckDuckGo 搜尋每日工業新聞 (預設過去一週 'w'，因為有些冷門網站並非每天更新大新聞)
+    使用 Google News RSS 搜尋每日工業新聞 (過去 7 天)
     回傳整理好的文字報告，供 LLM 分析
     """
-    ddgs = DDGS()
     raw_data = []
+    
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
     
     for category, info in CATEGORIES.items():
         sites_query = " OR ".join([f"site:{site}" for site in info['sites']])
-        query = f"{info['keywords']} ({sites_query})"
+        # Google News RSS query 格式: "keyword" (site:A OR site:B) when:7d
+        query = f'{info["keywords"]} ({sites_query}) when:{timelimit}'
         
         raw_data.append(f"=== {category} ===")
-        print(f"🔍 正在搜尋 [{category}] ...")
+        print(f"正在搜尋 [{category}] ...")
+        
+        url = f"https://news.google.com/rss/search?q={query}&hl=en-US&gl=US&ceid=US:en"
         
         try:
-            # 搜尋最多前 5 筆，確保來源權威性
-            results = ddgs.text(query, timelimit=timelimit, max_results=5)
-            if not results:
+            response = requests.get(url, headers=headers, timeout=10)
+            response.raise_for_status()
+            
+            root = ET.fromstring(response.text)
+            items = root.findall('.//item')
+            
+            if not items:
                 raw_data.append("過去一週內無相關重大新聞。")
                 continue
                 
-            for res in results:
-                title = res.get('title', '')
-                snippet = res.get('body', '')
-                link = res.get('href', '')
-                raw_data.append(f"- 標題: {title}\n  內容摘要: {snippet}\n  來源: {link}")
+            # 取前 5 篇即可
+            for item in items[:5]:
+                title = item.find('title').text if item.find('title') is not None else ''
+                pub_date = item.find('pubDate').text if item.find('pubDate') is not None else ''
+                source = item.find('source').text if item.find('source') is not None else ''
+                link = item.find('link').text if item.find('link') is not None else ''
                 
-            # 加上短暫延遲避免被 DuckDuckGo 阻擋
-            time.sleep(2)
+                raw_data.append(f"- 標題: {title}\n  發布時間: {pub_date}\n  來源: {source} ({link})")
+                
+            time.sleep(1)
             
         except Exception as e:
             raw_data.append(f"搜尋發生錯誤: {str(e)}")

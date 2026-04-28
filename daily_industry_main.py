@@ -19,14 +19,14 @@ def main():
     print("\n[2/3] 執行專家優化分析...")
     try:
         markdown_report = generate_daily_report(raw_data)
-        print("✅ 報告生成完畢！")
+        print("報告生成完畢！")
         
         # 將本次報告存檔以便除錯
         with open("latest_daily_industry_report.md", "w", encoding="utf-8") as f:
             f.write(markdown_report)
             
     except Exception as e:
-        print(f"❌ 產生報告時發生錯誤: {e}")
+        print(f"產生報告時發生錯誤: {e}")
         return
         
     # 3. 寄出 Email
