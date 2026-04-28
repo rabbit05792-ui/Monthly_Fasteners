@@ -1,0 +1,14 @@
+# Environment variables
+.env
+
+# Python compilation files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Generated files
+latest_report.md
+searched_data.md
+full_search_data.txt
+final_translated_table.md
