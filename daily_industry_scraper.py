@@ -4,23 +4,23 @@ import time
 CATEGORIES = {
     "汽車工業": {
         "sites": ["autonews.com", "reuters.com/business/autos-transportation", "electrek.co"],
-        "keywords": '("L3" OR "L4" OR "智駕" OR "固態電池" OR "設廠")'
+        "keywords": '("L3" OR "L4" OR "autonomous driving" OR "solid-state battery" OR "new plant" OR "factory")'
     },
     "重型機具": {
         "sites": ["engineering.com", "khl.com", "technologyreview.com"],
-        "keywords": '("電氣化挖土機" OR "3D列印" OR "3D printing" OR "氫能" OR "hydrogen")'
+        "keywords": '("electric excavator" OR "3D printing" OR "hydrogen" OR "heavy machinery")'
     },
     "能源產業": {
         "sites": ["iea.org", "bnef.com", "energy-storage.news"],
-        "keywords": '("小型模組化反應爐" OR "SMR" OR "虛擬電廠" OR "VPP" OR "離網")'
+        "keywords": '("SMR" OR "small modular reactor" OR "VPP" OR "virtual power plant" OR "off-grid")'
     },
     "航太與軍工": {
         "sites": ["defensenews.com", "aviationweek.com", "spacenews.com"],
-        "keywords": '("無人機" OR "drone" OR "低軌衛星" OR "不對稱作戰" OR "預算")'
+        "keywords": '("drone swarm" OR "UAV" OR "LEO" OR "low earth orbit" OR "asymmetric warfare" OR "defense budget")'
     },
     "投資與展望": {
         "sites": ["ft.com", "barrons.com", "clarivate.com"],
-        "keywords": '("資本支出" OR "CAPEX" OR "併購" OR "M&A" OR "專利")'
+        "keywords": '("CAPEX" OR "capital expenditure" OR "M&A" OR "merger" OR "patent" OR "innovation")'
     }
 }
 
