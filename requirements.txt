@@ -2,3 +2,5 @@ google-genai
 duckduckgo-search
 markdown
 python-dotenv
+gspread
+google-auth

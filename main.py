@@ -2,6 +2,7 @@ import time
 from scraper import get_recent_news
 from llm_processor import generate_report
 from mailer import send_email
+from sheets_logger import log_to_sheets
 
 # 使用者定義的名單 (前段部分，此處包含所有 60 家企業)
 COMPANIES = [
@@ -54,6 +55,9 @@ def main():
     
     print("\n準備發送 Email...")
     send_email(markdown_report)
+    
+    print("\n準備寫入 Google 試算表...")
+    log_to_sheets(markdown_report)
     
     print("====== 系統執行完畢 ======")
 
