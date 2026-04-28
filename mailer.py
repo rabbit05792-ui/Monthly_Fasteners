@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def send_email(markdown_content):
+def send_email(markdown_content, subject="📊 每月競爭對手新聞情報", title="📊 每月競爭對手新聞情報"):
     """將 Markdown 內容轉為 HTML 並透過 Gmail SMTP 寄送"""
     sender_email = os.getenv("SMTP_EMAIL")
     sender_password = os.getenv("SMTP_PASSWORD")
@@ -38,9 +38,9 @@ def send_email(markdown_content):
     </style>
     </head>
     <body>
-      <h2>📊 每月競爭對手新聞情報</h2>
+      <h2>{title}</h2>
       <p>日期：{datetime.now().strftime('%Y-%m-%d')}</p>
-      <p>以下為最新的企業動態監控報告：</p>
+      <p>以下為最新的監控報告：</p>
       
       {html_table}
       
@@ -54,7 +54,7 @@ def send_email(markdown_content):
 
     # 設定信件標題與收件人
     msg = MIMEMultipart('alternative')
-    msg['Subject'] = f"📊 每月競爭對手新聞情報 - {datetime.now().strftime('%Y-%m-%d')}"
+    msg['Subject'] = f"{subject} - {datetime.now().strftime('%Y-%m-%d')}"
     msg['From'] = sender_email
     msg['To'] = ", ".join(target_emails)
 
